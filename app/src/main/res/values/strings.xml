@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">ToDoApp</string>
+    <string name="add_new_task">Add New Task</string>
+    <string name="task_name">Task name</string>
+    <string name="description">description</string>
+    <string name="day">day</string>
+    <string name="date">date</string>
+    <string name="mon">mon</string>
+    <string name="state">STATE</string>
+    <string name="todo">TODO</string>
+    <string name="pick_time">Pick Time</string>
+    <string name="priority">priority</string>
+    <string name="ok">OK</string>
+    <string name="pick_date">Pick Date</string>
+</resources>
