@@ -1,31 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/add_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
 
-    <EditText
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_50sdp"
-        android:layout_marginTop="@dimen/_30sdp"
-        android:layout_marginBottom="@dimen/_30sdp"
-        android:hint="@string/task_name" />
+        android:layout_height="wrap_content"
+        android:id="@+id/textInputLayout"
+        android:padding="@dimen/_10sdp"
+        android:hint="@string/task_name"
+        app:hintTextColor="@color/orange"
+        app:boxStrokeColor="@color/orange"
+        >
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/ed_name"
+            />
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <EditText
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_50sdp"
-        android:layout_marginBottom="@dimen/_30sdp"
-        android:hint="@string/description" />
+        android:layout_height="wrap_content"
+        android:id="@+id/desc_textInputLayout"
+        android:padding="@dimen/_10sdp"
+        android:hint="@string/task_description"
+        app:hintTextColor="@color/orange"
+        app:boxStrokeColor="@color/orange"
+        app:errorIconTint="@color/orange"
+        >
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/ed_desc"
+            />
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <EditText
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_50sdp"
-        android:layout_marginBottom="@dimen/_30sdp"
-        android:hint="@string/priority" />
+        android:layout_height="wrap_content"
+        android:id="@+id/prio_textInputLayout"
+        android:padding="@dimen/_10sdp"
+        android:hint="@string/task_priority"
+        app:hintTextColor="@color/orange"
+        app:boxStrokeColor="@color/orange"
+        >
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/ed_priority"
+            />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
@@ -34,30 +66,41 @@
         android:orientation="horizontal">
 
         <Button
+            android:id="@+id/pick_time_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_5sdp"
-            android:layout_marginEnd="@dimen/_5sdp"
+            android:layout_margin="@dimen/_8sdp"
             android:layout_weight="1"
+            android:background="@drawable/rounded_shape"
             android:text="@string/pick_time"
             android:textSize="@dimen/_11ssp"
-            android:background="@drawable/rounded_shape"
+            app:backgroundTint="@null"
 
             />
 
         <Button
+            android:id="@+id/pick_date_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_5sdp"
-            android:layout_marginEnd="@dimen/_5sdp"
+            android:layout_margin="@dimen/_8sdp"
             android:layout_weight="1"
+            android:background="@drawable/rounded_shape"
             android:text="@string/pick_date"
             android:textSize="@dimen/_11ssp"
-            android:background="@drawable/rounded_shape"
+            app:backgroundTint="@null"
 
             />
-
     </androidx.appcompat.widget.LinearLayoutCompat>
 
-
+    <Button
+        android:id="@+id/add_task_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/_30sdp"
+        android:textSize="@dimen/_11ssp"
+        android:background="@drawable/rounded_shape"
+        android:text="@string/add_new_task"
+        app:backgroundTint="@null"
+        />
 </androidx.appcompat.widget.LinearLayoutCompat>
