@@ -1,18 +1,26 @@
 package todo.app.fragment
 
+import android.app.AlarmManager
 import android.app.DatePickerDialog
+import android.app.PendingIntent
 import android.app.TimePickerDialog
+import android.content.Context.ALARM_SERVICE
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.DatePicker
+import android.widget.EditText
+import android.widget.TimePicker
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import todo.app.R
-import todo.app.database.FireStoreDB
-import todo.app.model.TaskModel
+import todo.app.broadcast.AlarmBroadcastReceiver
+import java.util.*
 
 
 class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
@@ -24,6 +32,7 @@ class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
     private lateinit var edPrio: EditText
     private lateinit var taskDate: String
     private lateinit var taskTime: String
+    private lateinit var calendar: Calendar
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,6 +40,7 @@ class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
         savedInstanceState: Bundle?
     ): View {
         v = inflater.inflate(R.layout.new_task_fragment, container, false)
+        calendar = Calendar.getInstance()
         changeTitle()
         assignViewById()
         return v
@@ -79,18 +89,40 @@ class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
     }
 
     private val onAddClick = View.OnClickListener {
-        if (checkInput()) {
-            val t = TaskModel(
-                edName.text.toString(),
-                edDesc.text.toString(),
-                edPrio.text.toString().toInt(),
-                taskDate,
-                taskTime
-            )
-            FireStoreDB.getCollectionRef().add(t)
-            Snackbar.make(v, "Added new Task", Snackbar.LENGTH_LONG).show()
-        }
+        /*    if (checkInput()) {
+                val t = TaskModel(
+                    edName.text.toString(),
+                    edDesc.text.toString(),
+                    edPrio.text.toString().toInt(),
+                    taskDate,
+                    taskTime
+                )
 
+                FireStoreDB.getCollectionRef().add(t)*/
+        //}
+
+        clearView()
+        startNewAlarm()
+
+    }
+
+    private fun clearView(){
+        edName.text.clear()
+        edDesc.text.clear()
+        edPrio.text.clear()
+        taskTime = ""
+        taskDate = ""
+    }
+
+    private fun startNewAlarm() {
+
+        val alarmManager = context?.getSystemService(ALARM_SERVICE) as AlarmManager?
+        val intent = Intent(
+            context,
+            AlarmBroadcastReceiver::class.java
+        )
+        val pendingIntent = PendingIntent.getBroadcast(activity, 0, intent, 0)
+        alarmManager?.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
     }
 
     private val onDatePickerClick = View.OnClickListener {
@@ -105,9 +137,20 @@ class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
 
     override fun onDateSet(view: DatePicker?, year: Int, month: Int, dayOfMonth: Int) {
         taskDate = "$year-$month-$dayOfMonth"
+
+        calendar[Calendar.YEAR] = year
+        calendar[Calendar.MONTH] = month - 1 // the months are started from Zero
+        calendar[Calendar.DAY_OF_MONTH] = dayOfMonth
+
     }
 
     override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
         taskTime = "$hourOfDay:$minute:00"
+
+        calendar[Calendar.HOUR_OF_DAY] = hourOfDay
+        calendar[Calendar.MINUTE] = minute
+        calendar[Calendar.SECOND] = 0
+        calendar[Calendar.MILLISECOND] = 0
+
     }
 }

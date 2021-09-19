@@ -4,8 +4,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class FireStoreDB {
     companion object {
-        public fun getInstance() = FirebaseFirestore.getInstance()
-        public fun getCollectionRef() = FirebaseFirestore.getInstance().collection("Tasks")
+        fun getInstance() = FirebaseFirestore.getInstance()
+        fun getCollectionRef() = FirebaseFirestore.getInstance().collection("Tasks")
     }
 
 

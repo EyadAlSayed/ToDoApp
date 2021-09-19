@@ -10,11 +10,7 @@ import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import todo.app.R
-import todo.app.fragment.AddTaskFragment
-import todo.app.fragment.AllTaskFragment
-import todo.app.fragment.DatePickerFragment
-import todo.app.fragment.TimePickerFragment
-
+import todo.app.fragment.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,9 +28,8 @@ class MainActivity : AppCompatActivity() {
         }
         setContentView(R.layout.activity_main)
         showFragment(AllTaskFragment())
-        INI_actionBar()
+        initActionBar()
     }
-
 
 
     override fun onBackPressed() {
@@ -42,8 +37,8 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
     }
-    private fun INI_actionBar(){
-        supportActionBar?.setDisplayHomeAsUpEnabled(true);
+    private fun initActionBar(){
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_arrow_back)
         supportActionBar?.setBackgroundDrawable(ColorDrawable(Color.parseColor("#FF6701")))
     }
@@ -61,8 +56,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        when(supportFragmentManager.findFragmentById(R.id.main_fragment))
-        {
+        when (supportFragmentManager.findFragmentById(R.id.main_fragment)) {
             is AllTaskFragment -> {
                 finish()
                 return true
@@ -82,6 +76,4 @@ class MainActivity : AppCompatActivity() {
         }
         return super.onOptionsItemSelected(item)
     }
-
-
 }

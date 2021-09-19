@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.github.ybq.android.spinkit.sprite.Sprite
 import com.github.ybq.android.spinkit.style.DoubleBounce
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -30,8 +31,9 @@ class AllTaskFragment : Fragment() {
 
     private lateinit var v: View
     private lateinit var rc: RecyclerView
-    val itemList: ArrayList<TaskModel> = ArrayList()
-    lateinit var adapter: TasksAdapter
+    private val itemList: ArrayList<TaskModel> = ArrayList()
+    private lateinit var adapter: TasksAdapter
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,12 +42,25 @@ class AllTaskFragment : Fragment() {
     ): View {
 
         v = inflater.inflate(R.layout.all_task_fragment, container, false)
-        v.findViewById<FloatingActionButton>(R.id.fb_btn).setOnClickListener(onFloatClick)
+
+        initViews()
         changeTitle()
         initRc()
         startAnimatedProgressBar()
         eventChangeListner()
         return v
+    }
+
+    private fun initViews(){
+        v.findViewById<FloatingActionButton>(R.id.fb_btn).setOnClickListener(onFloatClick)
+       swipeRefreshLayout =  v.findViewById(R.id.swipe_refreshL)
+        swipeRefreshLayout.setOnRefreshListener(onRefreshSwipe)
+    }
+
+    private val onRefreshSwipe = SwipeRefreshLayout.OnRefreshListener{
+        // do more stuff
+        adapter.notifyDataSetChanged()
+        swipeRefreshLayout.isRefreshing = false
     }
 
     private fun startAnimatedProgressBar() {
@@ -71,7 +86,7 @@ class AllTaskFragment : Fragment() {
         showFragment(addTaskFragment)
     }
     private var itemTouchHelper: ItemTouchHelper.SimpleCallback? =
-        object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT ) {
+        object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT) {
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
@@ -81,13 +96,13 @@ class AllTaskFragment : Fragment() {
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                when(direction){
-                    ItemTouchHelper.RIGHT ->{
+                when (direction) {
+                    ItemTouchHelper.RIGHT -> {
                         itemList.removeAt(viewHolder.absoluteAdapterPosition)
                         adapter.notifyDataSetChanged()
                         Snackbar.make(v, "Task Deleted", Snackbar.LENGTH_LONG).show()
                     }
-                    ItemTouchHelper.LEFT ->{
+                    ItemTouchHelper.LEFT -> {
                         Snackbar.make(v, "Update Task", Snackbar.LENGTH_LONG).show()
                     }
                 }
@@ -210,6 +225,7 @@ class AllTaskFragment : Fragment() {
                 visibleEmptyView()
             } else {
                 visibleRc()
+                itemList.removeAll(itemList)
                 for (q in it.documents) {
                     val task = q.toObject(TaskModel::class.java)
                     itemList.add(task!!)

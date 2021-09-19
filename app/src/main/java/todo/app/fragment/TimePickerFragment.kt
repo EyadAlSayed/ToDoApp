@@ -18,6 +18,6 @@ class TimePickerFragment :DialogFragment() {
         val addTaskFragment:AddTaskFragment by inject()
 
 
-        return TimePickerDialog(activity,addTaskFragment, hour, minute, true)
+        return TimePickerDialog(activity,addTaskFragment, hour, minute, false)
     }
 }
