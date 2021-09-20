@@ -7,7 +7,6 @@ import android.app.TimePickerDialog
 import android.content.Context.ALARM_SERVICE
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +19,8 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import todo.app.R
 import todo.app.broadcast.AlarmBroadcastReceiver
+import todo.app.database.FireStoreDB
+import todo.app.model.TaskModel
 import java.util.*
 
 
@@ -44,6 +45,35 @@ class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
         changeTitle()
         assignViewById()
         return v
+    }
+
+    private val onAddClick = View.OnClickListener {
+        if (checkInput()) {
+            val task = TaskModel(
+                edName.text.toString(),
+                edDesc.text.toString(),
+                edPrio.text.toString().toInt(),
+                taskDate,
+                taskTime
+            )
+            FireStoreDB.getCollectionRef().add(task)
+            clearView()
+
+            val x = TaskModel("eyad", "sa", 1, "1111", "1111")
+            startNewAlarm(x)
+            Snackbar.make(v, "Add Task", Snackbar.LENGTH_SHORT).show()
+        }
+    }
+
+
+    private val onDatePickerClick = View.OnClickListener {
+        val datePicker = DatePickerFragment()
+        datePicker.show(activity?.supportFragmentManager!!, "datePicker")
+    }
+
+    private val onTimePickerClick = View.OnClickListener {
+        val timePicker = TimePickerFragment()
+        timePicker.show(activity?.supportFragmentManager!!, "timePicker")
     }
 
     private fun changeTitle() {
@@ -88,25 +118,7 @@ class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
         return isOk
     }
 
-    private val onAddClick = View.OnClickListener {
-        /*    if (checkInput()) {
-                val t = TaskModel(
-                    edName.text.toString(),
-                    edDesc.text.toString(),
-                    edPrio.text.toString().toInt(),
-                    taskDate,
-                    taskTime
-                )
-
-                FireStoreDB.getCollectionRef().add(t)*/
-        //}
-
-        clearView()
-        startNewAlarm()
-
-    }
-
-    private fun clearView(){
+    private fun clearView() {
         edName.text.clear()
         edDesc.text.clear()
         edPrio.text.clear()
@@ -114,25 +126,24 @@ class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
         taskDate = ""
     }
 
-    private fun startNewAlarm() {
+    private fun startNewAlarm(taskModel: TaskModel) {
 
         val alarmManager = context?.getSystemService(ALARM_SERVICE) as AlarmManager?
         val intent = Intent(
             context,
             AlarmBroadcastReceiver::class.java
         )
+        sendTaskObject(intent, taskModel)
         val pendingIntent = PendingIntent.getBroadcast(activity, 0, intent, 0)
         alarmManager?.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
     }
 
-    private val onDatePickerClick = View.OnClickListener {
-        val datePicker = DatePickerFragment()
-        datePicker.show(activity?.supportFragmentManager!!, "datePicker")
-    }
-
-    private val onTimePickerClick = View.OnClickListener {
-        val timePicker = TimePickerFragment()
-        timePicker.show(activity?.supportFragmentManager!!, "timePicker")
+    private fun sendTaskObject(intent: Intent, taskModel: TaskModel) {
+        intent.putExtra("NAME", taskModel.name)
+        intent.putExtra("DESC", taskModel.description)
+        intent.putExtra("PRIO", taskModel.priority)
+        intent.putExtra("DATE", taskModel.date)
+        intent.putExtra("TIME", taskModel.time)
     }
 
     override fun onDateSet(view: DatePicker?, year: Int, month: Int, dayOfMonth: Int) {

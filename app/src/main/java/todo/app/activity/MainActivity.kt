@@ -27,16 +27,10 @@ class MainActivity : AppCompatActivity() {
             )
         }
         setContentView(R.layout.activity_main)
-        showFragment(AllTaskFragment())
         initActionBar()
+        showFragment(AllTaskFragment())
     }
 
-
-    override fun onBackPressed() {
-        if(supportFragmentManager.findFragmentById(R.id.main_fragment) is AllTaskFragment){
-            finish()
-        }
-    }
     private fun initActionBar(){
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_arrow_back)
@@ -75,5 +69,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onBackPressed() {
+        if(supportFragmentManager.findFragmentById(R.id.main_fragment) is AllTaskFragment){
+            finish()
+        }
     }
 }

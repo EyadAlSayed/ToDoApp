@@ -51,40 +51,17 @@ class AllTaskFragment : Fragment() {
         return v
     }
 
-    private fun initViews(){
-        v.findViewById<FloatingActionButton>(R.id.fb_btn).setOnClickListener(onFloatClick)
-       swipeRefreshLayout =  v.findViewById(R.id.swipe_refreshL)
-        swipeRefreshLayout.setOnRefreshListener(onRefreshSwipe)
+    private val onFloatClick = View.OnClickListener {
+        val addTaskFragment: AddTaskFragment by inject()
+        showFragment(addTaskFragment)
     }
 
-    private val onRefreshSwipe = SwipeRefreshLayout.OnRefreshListener{
+    private val onRefreshSwipe = SwipeRefreshLayout.OnRefreshListener {
         // do more stuff
         adapter.notifyDataSetChanged()
         swipeRefreshLayout.isRefreshing = false
     }
 
-    private fun startAnimatedProgressBar() {
-        val progressBar = v.findViewById<ProgressBar>(R.id.double_bounce_bar)
-        progressBar.visibility = View.VISIBLE
-        val doubleBounce: Sprite = DoubleBounce()
-        progressBar.indeterminateDrawable = doubleBounce
-    }
-
-    private fun stopAnimatedProgressBar() {
-        val progressBar = v.findViewById<ProgressBar>(R.id.double_bounce_bar)
-        progressBar.visibility = View.GONE
-        progressBar.isIndeterminate = false
-    }
-
-    private fun changeTitle() {
-        val appCompatActivity: AppCompatActivity = activity as AppCompatActivity
-        appCompatActivity.title = "All Tasks"
-    }
-
-    private val onFloatClick = View.OnClickListener {
-        val addTaskFragment: AddTaskFragment by inject()
-        showFragment(addTaskFragment)
-    }
     private var itemTouchHelper: ItemTouchHelper.SimpleCallback? =
         object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT) {
             override fun onMove(
@@ -100,10 +77,10 @@ class AllTaskFragment : Fragment() {
                     ItemTouchHelper.RIGHT -> {
                         itemList.removeAt(viewHolder.absoluteAdapterPosition)
                         adapter.notifyDataSetChanged()
-                        Snackbar.make(v, "Task Deleted", Snackbar.LENGTH_LONG).show()
+                        Snackbar.make(v, "Task Deleted", Snackbar.LENGTH_SHORT).show()
                     }
                     ItemTouchHelper.LEFT -> {
-                        Snackbar.make(v, "Update Task", Snackbar.LENGTH_LONG).show()
+                        Snackbar.make(v, "Update Task", Snackbar.LENGTH_SHORT).show()
                     }
                 }
 
@@ -132,6 +109,41 @@ class AllTaskFragment : Fragment() {
                 )
             }
         }
+
+
+    private fun initViews() {
+        v.findViewById<FloatingActionButton>(R.id.fb_btn).setOnClickListener(onFloatClick)
+        swipeRefreshLayout = v.findViewById(R.id.swipe_refreshL)
+        swipeRefreshLayout.setOnRefreshListener(onRefreshSwipe)
+    }
+
+    private fun initRc() {
+        rc = v.findViewById(R.id.recyclerView)
+        rc.setHasFixedSize(true)
+        rc.layoutManager = LinearLayoutManager(context)
+        adapter = TasksAdapter(itemList)
+        rc.adapter = adapter
+        ItemTouchHelper(itemTouchHelper!!).attachToRecyclerView(rc)
+    }
+
+    private fun changeTitle() {
+        val appCompatActivity: AppCompatActivity = activity as AppCompatActivity
+        appCompatActivity.title = "All Tasks"
+    }
+
+
+    private fun startAnimatedProgressBar() {
+        val progressBar = v.findViewById<ProgressBar>(R.id.double_bounce_bar)
+        progressBar.visibility = View.VISIBLE
+        val doubleBounce: Sprite = DoubleBounce()
+        progressBar.indeterminateDrawable = doubleBounce
+    }
+
+    private fun stopAnimatedProgressBar() {
+        val progressBar = v.findViewById<ProgressBar>(R.id.double_bounce_bar)
+        progressBar.visibility = View.GONE
+        progressBar.isIndeterminate = false
+    }
 
     private fun setupLeftSwipe(
         c: Canvas,
@@ -198,27 +210,6 @@ class AllTaskFragment : Fragment() {
             .decorate()
     }
 
-
-    private fun initRc() {
-        rc = v.findViewById(R.id.recyclerView)
-        rc.setHasFixedSize(true)
-        rc.layoutManager = LinearLayoutManager(context)
-        adapter = TasksAdapter(itemList)
-        rc.adapter = adapter
-        ItemTouchHelper(itemTouchHelper!!).attachToRecyclerView(rc)
-    }
-
-    private fun showFragment(fragment: Fragment) {
-        activity?.supportFragmentManager?.beginTransaction()?.setCustomAnimations(
-            R.anim.slide_in,
-            R.anim.fade_out,
-            R.anim.fade_in,
-            R.anim.slide_out
-        )
-            ?.replace(R.id.main_fragment, fragment)?.addToBackStack(null)?.commit()
-
-    }
-
     private fun eventChangeListner() {
         FireStoreDB.getCollectionRef().get().addOnSuccessListener {
             if (it.documents.isEmpty()) {
@@ -247,4 +238,14 @@ class AllTaskFragment : Fragment() {
         stopAnimatedProgressBar()
     }
 
+    private fun showFragment(fragment: Fragment) {
+        activity?.supportFragmentManager?.beginTransaction()?.setCustomAnimations(
+            R.anim.slide_in,
+            R.anim.fade_out,
+            R.anim.fade_in,
+            R.anim.slide_out
+        )
+            ?.replace(R.id.main_fragment, fragment)?.addToBackStack(null)?.commit()
+
+    }
 }

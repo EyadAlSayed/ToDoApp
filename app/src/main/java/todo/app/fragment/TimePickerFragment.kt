@@ -15,8 +15,8 @@ class TimePickerFragment :DialogFragment() {
         val c = Calendar.getInstance()
         val hour = c.get(Calendar.HOUR_OF_DAY)
         val minute = c.get(Calendar.MINUTE)
-        val addTaskFragment:AddTaskFragment by inject()
 
+        val addTaskFragment:AddTaskFragment by inject()
 
         return TimePickerDialog(activity,addTaskFragment, hour, minute, false)
     }

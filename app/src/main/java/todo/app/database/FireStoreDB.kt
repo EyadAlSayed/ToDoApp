@@ -7,6 +7,4 @@ class FireStoreDB {
         fun getInstance() = FirebaseFirestore.getInstance()
         fun getCollectionRef() = FirebaseFirestore.getInstance().collection("Tasks")
     }
-
-
 }
