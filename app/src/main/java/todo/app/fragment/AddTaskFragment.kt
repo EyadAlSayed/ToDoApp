@@ -5,11 +5,13 @@ import android.app.DatePickerDialog
 import android.app.PendingIntent
 import android.app.TimePickerDialog
 import android.content.Context.ALARM_SERVICE
+import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.DatePicker
 import android.widget.EditText
@@ -20,6 +22,8 @@ import com.google.android.material.snackbar.Snackbar
 import todo.app.R
 import todo.app.broadcast.AlarmBroadcastReceiver
 import todo.app.database.FireStoreDB
+import todo.app.message.ErrorMessage
+import todo.app.message.InfoMessage
 import todo.app.model.TaskModel
 import java.util.*
 
@@ -41,9 +45,9 @@ class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
         savedInstanceState: Bundle?
     ): View {
         v = inflater.inflate(R.layout.new_task_fragment, container, false)
+        initViews()
         calendar = Calendar.getInstance()
         changeTitle()
-        assignViewById()
         return v
     }
 
@@ -57,31 +61,26 @@ class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
                 taskTime
             )
             FireStoreDB.getCollectionRef().add(task)
+            startNewAlarm(task)
             clearView()
-
-            val x = TaskModel("eyad", "sa", 1, "1111", "1111")
-            startNewAlarm(x)
-            Snackbar.make(v, "Add Task", Snackbar.LENGTH_SHORT).show()
+            hideKeyBoard()
+            showSnackBar(InfoMessage.ADD_TASK.message)
         }
+
     }
 
 
     private val onDatePickerClick = View.OnClickListener {
         val datePicker = DatePickerFragment()
-        datePicker.show(activity?.supportFragmentManager!!, "datePicker")
+        datePicker.show(requireActivity().supportFragmentManager, "datePicker")
     }
 
     private val onTimePickerClick = View.OnClickListener {
         val timePicker = TimePickerFragment()
-        timePicker.show(activity?.supportFragmentManager!!, "timePicker")
+        timePicker.show(requireActivity().supportFragmentManager, "timePicker")
     }
 
-    private fun changeTitle() {
-        val appCompatActivity: AppCompatActivity = activity as AppCompatActivity
-        appCompatActivity.title = "Add New Task"
-    }
-
-    private fun assignViewById() {
+    private fun initViews() {
         v.findViewById<Button>(R.id.add_task_btn).setOnClickListener(onAddClick)
         v.findViewById<Button>(R.id.pick_date_btn).setOnClickListener(onDatePickerClick)
         v.findViewById<Button>(R.id.pick_time_btn).setOnClickListener(onTimePickerClick)
@@ -91,28 +90,33 @@ class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
         edPrio = v.findViewById(R.id.ed_priority)
     }
 
+    private fun changeTitle() {
+        val appCompatActivity: AppCompatActivity = activity as AppCompatActivity
+        appCompatActivity.title = "Add New Task"
+    }
+
     private fun checkInput(): Boolean {
         val errorMessage = "This field is required"
         var isOk = true
 
-        if (edName.length() == 0) {
+        if (edName.text.isEmpty()) {
             edName.error = errorMessage
             isOk = false
         }
-        if (edDesc.length() == 0) {
+        if (edDesc.text.isEmpty()) {
             edDesc.error = errorMessage
             isOk = false
         }
-        if (edPrio.length() == 0) {
+        if (edPrio.text.isEmpty()) {
             edPrio.error = errorMessage
             isOk = false
         }
         if (taskDate.isEmpty()) {
-            Snackbar.make(v, "Choose Date", Snackbar.LENGTH_LONG).show()
+            showSnackBar(ErrorMessage.DATE_NOT_CHOSEN.message)
             isOk = false
         }
         if (taskTime.isEmpty()) {
-            Snackbar.make(v, "Choose Time", Snackbar.LENGTH_LONG).show()
+            showSnackBar(ErrorMessage.TIME_NOT_CHOSEN.message)
             isOk = false
         }
         return isOk
@@ -128,16 +132,32 @@ class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
 
     private fun startNewAlarm(taskModel: TaskModel) {
 
+        val reqCode = 0
         val alarmManager = context?.getSystemService(ALARM_SERVICE) as AlarmManager?
         val intent = Intent(
             context,
             AlarmBroadcastReceiver::class.java
-        )
+        ).apply { this.putExtra("ID",reqCode) }
+
         sendTaskObject(intent, taskModel)
-        val pendingIntent = PendingIntent.getBroadcast(activity, 0, intent, 0)
+        val pendingIntent = PendingIntent.getBroadcast(activity, reqCode, intent, 0)
         alarmManager?.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
     }
 
+    private fun hideKeyBoard() {
+
+        val manager = context?.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        manager.hideSoftInputFromWindow(edName.applicationWindowToken, 0)
+        manager.hideSoftInputFromWindow(edDesc.applicationWindowToken, 0)
+        manager.hideSoftInputFromWindow(edPrio.applicationWindowToken, 0)
+
+    }
+
+    private fun showSnackBar(message:String){
+        val sb = Snackbar.make(v, message, Snackbar.LENGTH_SHORT)
+        sb.view.setBackgroundResource(R.drawable.rounded_shape_snackbar)
+        sb.show()
+    }
     private fun sendTaskObject(intent: Intent, taskModel: TaskModel) {
         intent.putExtra("NAME", taskModel.name)
         intent.putExtra("DESC", taskModel.description)
@@ -147,21 +167,27 @@ class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
     }
 
     override fun onDateSet(view: DatePicker?, year: Int, month: Int, dayOfMonth: Int) {
-        taskDate = "$year-$month-$dayOfMonth"
+        taskDate = "$year-${month+1}-$dayOfMonth"
+
+        changePickerButtonColor(v.findViewById(R.id.pick_date_btn))
 
         calendar[Calendar.YEAR] = year
-        calendar[Calendar.MONTH] = month - 1 // the months are started from Zero
+        calendar[Calendar.MONTH] = month
         calendar[Calendar.DAY_OF_MONTH] = dayOfMonth
-
     }
 
     override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
         taskTime = "$hourOfDay:$minute:00"
 
+        changePickerButtonColor(v.findViewById(R.id.pick_time_btn))
+
         calendar[Calendar.HOUR_OF_DAY] = hourOfDay
         calendar[Calendar.MINUTE] = minute
         calendar[Calendar.SECOND] = 0
         calendar[Calendar.MILLISECOND] = 0
+    }
 
+    private fun changePickerButtonColor(button: Button){
+        button.setBackgroundResource(R.color.orange)
     }
 }

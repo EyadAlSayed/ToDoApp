@@ -3,8 +3,6 @@ package todo.app.activity
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
@@ -19,6 +17,7 @@ import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import todo.app.R
 import todo.app.broadcast.AlarmBroadcastReceiver
+import todo.app.message.InfoMessage
 
 
 class AlarmActivity : AppCompatActivity() {
@@ -44,10 +43,10 @@ class AlarmActivity : AppCompatActivity() {
         setContentView(R.layout.alram_layout)
         view = findViewById(R.id.alarm_parent_layout)
 
-        initActionBar()
+        initViews()
         initMediaPlayer()
-        assignViewById()
         loadingGIFImage()
+
 
         txtAlarmTaskName.text = intent.getStringExtra("NAME")
         txtAlarmDesc.text = intent.getStringExtra("DESC")
@@ -59,32 +58,32 @@ class AlarmActivity : AppCompatActivity() {
     private val onOkClick = View.OnClickListener {
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager?
         val intent = Intent(this, AlarmBroadcastReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0)
+        val pendingIntent = PendingIntent.getBroadcast(this, intent.getIntExtra("ID",-1), intent, 0)
         alarmManager!!.cancel(pendingIntent)
         stopPlayer()
         finish()
     }
 
-    private fun initMediaPlayer() {
+    private fun initViews() {
+        img = findViewById(R.id.alarm_img)
+        txtAlarmTaskName = findViewById(R.id.txt_alarm_task_name)
+        txtAlarmDesc = findViewById(R.id.txt_alarm_description)
+        findViewById<Button>(R.id.ok_btn).setOnClickListener(onOkClick)
+    }
 
+    private fun initMediaPlayer() {
         mediaPlayer = MediaPlayer.create(this, R.raw.ringtone)
         mediaPlayer!!.setOnCompletionListener {
             mediaPlayer!!.start()
         }
     }
 
-    private fun initActionBar() {
+   /* private fun initActionBar() {
 
-        supportActionBar?.setBackgroundDrawable(ColorDrawable(Color.parseColor("#FEA82F")))
+        supportActionBar?.setBackgroundDrawable(ColorDrawable(Color.parseColor("#F9BF35")))
         supportActionBar?.title = "Alarm Task"
-    }
+    }*/
 
-    private fun assignViewById() {
-        img = findViewById(R.id.alarm_img)
-        txtAlarmTaskName = findViewById(R.id.txt_alarm_task_name)
-        txtAlarmDesc = findViewById(R.id.txt_alarm_description)
-        findViewById<Button>(R.id.ok_btn).setOnClickListener(onOkClick)
-    }
 
     private fun loadingGIFImage() {
         Glide.with(this).load(R.drawable.task_alarm).into(img)
@@ -94,12 +93,16 @@ class AlarmActivity : AppCompatActivity() {
         if (mediaPlayer != null) {
             mediaPlayer!!.release()
             mediaPlayer = null
-            Snackbar.make(view, "The ringtone stopped", Snackbar.LENGTH_SHORT).show()
         }
+        showSnackBar(InfoMessage.RINGTONE_STOP.message)
+    }
+    private fun showSnackBar(message:String){
+        val sb = Snackbar.make(view, message, Snackbar.LENGTH_SHORT)
+        sb.view.setBackgroundResource(R.color.orange)
+        sb.show()
     }
     override fun onStop() {
         super.onStop()
         stopPlayer()
-
     }
 }

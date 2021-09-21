@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import org.koin.android.ext.android.inject
+import todo.app.R
 import java.util.*
 
 
@@ -19,6 +20,8 @@ class DatePickerFragment:DialogFragment(){
 
         val addTaskFragment:AddTaskFragment by inject()
 
-        return DatePickerDialog(requireActivity(),addTaskFragment,year,month,day)
+        return DatePickerDialog(requireActivity(),R.style.DatePickerDialogTheme,addTaskFragment,year,month,day)
+
+
     }
 }

@@ -24,6 +24,7 @@ import org.koin.android.ext.android.inject
 import todo.app.R
 import todo.app.adapter.TasksAdapter
 import todo.app.database.FireStoreDB
+import todo.app.message.InfoMessage
 import todo.app.model.TaskModel
 
 
@@ -57,8 +58,7 @@ class AllTaskFragment : Fragment() {
     }
 
     private val onRefreshSwipe = SwipeRefreshLayout.OnRefreshListener {
-        // do more stuff
-        adapter.notifyDataSetChanged()
+        eventChangeListner()
         swipeRefreshLayout.isRefreshing = false
     }
 
@@ -77,13 +77,12 @@ class AllTaskFragment : Fragment() {
                     ItemTouchHelper.RIGHT -> {
                         itemList.removeAt(viewHolder.absoluteAdapterPosition)
                         adapter.notifyDataSetChanged()
-                        Snackbar.make(v, "Task Deleted", Snackbar.LENGTH_SHORT).show()
+                        showSnackBar(InfoMessage.DELETE_TASK.message)
                     }
                     ItemTouchHelper.LEFT -> {
-                        Snackbar.make(v, "Update Task", Snackbar.LENGTH_SHORT).show()
+                        showSnackBar(InfoMessage.UPDATE_TASK.message)
                     }
                 }
-
             }
 
             override fun onChildDraw(
@@ -115,6 +114,7 @@ class AllTaskFragment : Fragment() {
         v.findViewById<FloatingActionButton>(R.id.fb_btn).setOnClickListener(onFloatClick)
         swipeRefreshLayout = v.findViewById(R.id.swipe_refreshL)
         swipeRefreshLayout.setOnRefreshListener(onRefreshSwipe)
+        swipeRefreshLayout.setColorSchemeResources(R.color.orange)
     }
 
     private fun initRc() {
@@ -247,5 +247,10 @@ class AllTaskFragment : Fragment() {
         )
             ?.replace(R.id.main_fragment, fragment)?.addToBackStack(null)?.commit()
 
+    }
+    private fun showSnackBar(message:String){
+        val sb = Snackbar.make(v, message, Snackbar.LENGTH_SHORT)
+        sb.view.setBackgroundResource(R.drawable.rounded_shape_snackbar)
+        sb.show()
     }
 }

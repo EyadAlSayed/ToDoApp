@@ -12,4 +12,5 @@
     <string name="pick_date">Pick Date</string>
     <string name="mon">mon</string>
     <string name="year">year</string>
+    <string name="alarm_task">Alarm Task</string>
 </resources>
