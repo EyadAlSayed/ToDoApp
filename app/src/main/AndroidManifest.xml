@@ -12,13 +12,15 @@
         android:roundIcon="@mipmap/ic_todo_app_round"
         android:theme="@style/Theme.ToDoApp">
         <activity android:name=".activity.MainActivity">
+
+        </activity>
+        <activity android:name=".activity.AlarmActivity" android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.AlarmActivity" android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <receiver android:name=".broadcast.AlarmBroadcastReceiver"/>
     </application>
 
