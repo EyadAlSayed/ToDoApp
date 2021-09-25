@@ -56,12 +56,17 @@ class AlarmActivity : AppCompatActivity() {
     }
 
     private val onOkClick = View.OnClickListener {
-        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager?
-        val intent = Intent(this, AlarmBroadcastReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(this, intent.getIntExtra("ID",-1), intent, 0)
-        alarmManager!!.cancel(pendingIntent)
+        cancelAlarm()
         stopPlayer()
         finish()
+    }
+
+    private fun cancelAlarm() {
+        val reqCode = intent.getIntExtra("ID", -1)
+        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager?
+        val intent = Intent(this, AlarmBroadcastReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(this, reqCode, intent, 0)
+        alarmManager!!.cancel(pendingIntent)
     }
 
     private fun initViews() {
@@ -78,13 +83,6 @@ class AlarmActivity : AppCompatActivity() {
         }
     }
 
-   /* private fun initActionBar() {
-
-        supportActionBar?.setBackgroundDrawable(ColorDrawable(Color.parseColor("#F9BF35")))
-        supportActionBar?.title = "Alarm Task"
-    }*/
-
-
     private fun loadingGIFImage() {
         Glide.with(this).load(R.drawable.task_alarm).into(img)
     }
@@ -96,13 +94,16 @@ class AlarmActivity : AppCompatActivity() {
         }
         showSnackBar(InfoMessage.RINGTONE_STOP.message)
     }
-    private fun showSnackBar(message:String){
+
+    private fun showSnackBar(message: String) {
         val sb = Snackbar.make(view, message, Snackbar.LENGTH_SHORT)
         sb.view.setBackgroundResource(R.color.orange)
         sb.show()
     }
+
     override fun onStop() {
         super.onStop()
         stopPlayer()
     }
+
 }

@@ -1,5 +1,8 @@
 package todo.app.fragment
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Intent
 import android.graphics.Canvas
 import android.os.Bundle
 import android.util.TypedValue
@@ -19,22 +22,26 @@ import com.github.ybq.android.spinkit.sprite.Sprite
 import com.github.ybq.android.spinkit.style.DoubleBounce
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
-import org.koin.android.ext.android.inject
 import todo.app.R
 import todo.app.adapter.TasksAdapter
+import todo.app.broadcast.AlarmBroadcastReceiver
+import todo.app.data.ItemList
 import todo.app.database.FireStoreDB
 import todo.app.message.InfoMessage
 import todo.app.model.TaskModel
+import javax.inject.Inject
 
-
-class AllTaskFragment : Fragment() {
+@AndroidEntryPoint
+class AllTaskFragment @Inject constructor() : Fragment() {
 
     private lateinit var v: View
     private lateinit var rc: RecyclerView
-    private val itemList: ArrayList<TaskModel> = ArrayList()
-    private lateinit var adapter: TasksAdapter
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+
+    @Inject
+    lateinit var singleTaskFragment:SingleTaskFragment
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,8 +60,10 @@ class AllTaskFragment : Fragment() {
     }
 
     private val onFloatClick = View.OnClickListener {
-        val addTaskFragment: AddTaskFragment by inject()
-        showFragment(addTaskFragment)
+        val bundle = Bundle()
+        bundle.putInt("FLAG",0)
+        singleTaskFragment.arguments = bundle
+        showFragment(singleTaskFragment)
     }
 
     private val onRefreshSwipe = SwipeRefreshLayout.OnRefreshListener {
@@ -73,14 +82,19 @@ class AllTaskFragment : Fragment() {
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val pos = viewHolder.absoluteAdapterPosition
                 when (direction) {
                     ItemTouchHelper.RIGHT -> {
-                        itemList.removeAt(viewHolder.absoluteAdapterPosition)
-                        adapter.notifyDataSetChanged()
+                        deleteItem(pos)
+                        if(ItemList.getList().isEmpty()) visibleEmptyView()
                         showSnackBar(InfoMessage.DELETE_TASK.message)
                     }
                     ItemTouchHelper.LEFT -> {
-                        showSnackBar(InfoMessage.UPDATE_TASK.message)
+                        val bundle = Bundle()
+                        bundle.putInt("FLAG",1)
+                        bundle.putSerializable("TASK",ItemList.getList()[pos])
+                        singleTaskFragment.arguments = bundle
+                        showFragment(singleTaskFragment)
                     }
                 }
             }
@@ -95,8 +109,8 @@ class AllTaskFragment : Fragment() {
                 isCurrentlyActive: Boolean
             ) {
 
-                setupRightSwipe(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
-                setupLeftSwipe(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+                setupRightSwipe(c,recyclerView,viewHolder,dX,dY,actionState,isCurrentlyActive)
+                setupLeftSwipe(c,recyclerView,viewHolder,dX,dY,actionState,isCurrentlyActive)
                 super.onChildDraw(
                     c,
                     recyclerView,
@@ -108,6 +122,25 @@ class AllTaskFragment : Fragment() {
                 )
             }
         }
+
+    private fun deleteItem(pos:Int):Boolean{
+        val id = ItemList.getList()[pos].id
+        FireStoreDB.deleteDoc(id)
+        cancelAlarm(pos)
+        ItemList.removeItemByPosition(pos)
+        rc.adapter?.notifyItemRemoved(pos)
+        return true
+    }
+
+    private fun cancelAlarm(reqCode:Int) {
+        val alarmManager = context?.getSystemService(AppCompatActivity.ALARM_SERVICE) as AlarmManager?
+        val intent = Intent(requireActivity(), AlarmBroadcastReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(requireActivity(), reqCode+1, intent, 0)
+        // the reqCode is plus one because the alarm request code set according to size of ItemList
+        alarmManager!!.cancel(pendingIntent)
+        pendingIntent.cancel()
+    }
+
 
 
     private fun initViews() {
@@ -121,8 +154,7 @@ class AllTaskFragment : Fragment() {
         rc = v.findViewById(R.id.recyclerView)
         rc.setHasFixedSize(true)
         rc.layoutManager = LinearLayoutManager(context)
-        adapter = TasksAdapter(itemList)
-        rc.adapter = adapter
+        rc.adapter = TasksAdapter()
         ItemTouchHelper(itemTouchHelper!!).attachToRecyclerView(rc)
     }
 
@@ -166,7 +198,7 @@ class AllTaskFragment : Fragment() {
             .addSwipeLeftBackgroundColor(
                 ContextCompat.getColor(
                     v.context,
-                    R.color.orange_200
+                    R.color.orange_400
                 )
             )
             .addSwipeLeftActionIcon(R.drawable.ic_update)
@@ -216,11 +248,11 @@ class AllTaskFragment : Fragment() {
                 visibleEmptyView()
             } else {
                 visibleRc()
-                itemList.removeAll(itemList)
+                ItemList.removeAllItem()
                 for (q in it.documents) {
                     val task = q.toObject(TaskModel::class.java)
-                    itemList.add(task!!)
-                    adapter.notifyDataSetChanged()
+                    ItemList.addItem(task!!)
+                    rc.adapter?.notifyDataSetChanged()
                 }
             }
         }
@@ -239,13 +271,13 @@ class AllTaskFragment : Fragment() {
     }
 
     private fun showFragment(fragment: Fragment) {
+
         activity?.supportFragmentManager?.beginTransaction()?.setCustomAnimations(
             R.anim.slide_in,
             R.anim.fade_out,
             R.anim.fade_in,
             R.anim.slide_out
-        )
-            ?.replace(R.id.main_fragment, fragment)?.addToBackStack(null)?.commit()
+        )?.replace(R.id.main_fragment,fragment,null)?.commit()
 
     }
     private fun showSnackBar(message:String){
@@ -253,4 +285,5 @@ class AllTaskFragment : Fragment() {
         sb.view.setBackgroundResource(R.drawable.rounded_shape_snackbar)
         sb.show()
     }
+
 }

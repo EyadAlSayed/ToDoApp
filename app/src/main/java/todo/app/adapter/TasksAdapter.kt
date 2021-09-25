@@ -6,14 +6,14 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import todo.app.R
+import todo.app.data.ItemList
 import todo.app.model.TaskModel
 import java.text.SimpleDateFormat
 import java.util.*
 
-class TasksAdapter(taskItems: List<TaskModel>) :
+class TasksAdapter :
     RecyclerView.Adapter<TasksAdapter.TaskViewHolder>() {
 
-    private val items = taskItems
 
     class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
@@ -62,10 +62,10 @@ class TasksAdapter(taskItems: List<TaskModel>) :
     }
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
-        holder.bind(items[position])
+        holder.bind(ItemList.getItemByPosition(position))
     }
 
     override fun getItemCount(): Int {
-        return items.size
+        return ItemList.getItemListSize()
     }
 }

@@ -9,11 +9,16 @@ import android.view.WindowInsets
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import dagger.hilt.android.AndroidEntryPoint
 import todo.app.R
 import todo.app.fragment.*
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
+    @Inject
+    lateinit var allTaskFragment: AllTaskFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         }
         setContentView(R.layout.activity_main)
         initActionBar()
-        showFragment(AllTaskFragment())
+        showFragment(allTaskFragment)
     }
 
     private fun initActionBar(){
@@ -43,28 +48,35 @@ class MainActivity : AppCompatActivity() {
             R.anim.fade_out,
             R.anim.fade_in,
             R.anim.slide_out
-        )
-            .replace(R.id.main_fragment, fragment).addToBackStack(null).commit()
+        ).replace(R.id.main_fragment,fragment,null).commit()
         }
+
+    private fun removeFragment(fragment: Fragment){
+        supportFragmentManager.beginTransaction().remove(fragment).commit()
+    }
 
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        when (supportFragmentManager.findFragmentById(R.id.main_fragment)) {
+        when (val currentFragment = supportFragmentManager.findFragmentById(R.id.main_fragment)) {
             is AllTaskFragment -> {
+                removeFragment(currentFragment)
                 finish()
                 return true
             }
-            is AddTaskFragment -> {
+            is SingleTaskFragment -> {
+                removeFragment(currentFragment)
                 showFragment(AllTaskFragment())
                 return true
             }
             is DatePickerFragment -> {
-                showFragment(AddTaskFragment())
+                removeFragment(currentFragment)
+                showFragment(SingleTaskFragment())
                 return true
             }
             is TimePickerFragment -> {
-                showFragment(AddTaskFragment())
+                removeFragment(currentFragment)
+                showFragment(SingleTaskFragment())
                 return true
             }
         }

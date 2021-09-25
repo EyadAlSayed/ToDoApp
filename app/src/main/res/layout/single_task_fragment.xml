@@ -103,4 +103,15 @@
         android:text="@string/add_new_task"
         app:backgroundTint="@null"
         />
+    <Button
+        android:id="@+id/update_task_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textSize="@dimen/_11ssp"
+        android:layout_marginTop="@dimen/_30sdp"
+        android:background="@drawable/rounded_shape"
+        android:text="@string/update_task"
+        app:backgroundTint="@null"
+        />
 </androidx.appcompat.widget.LinearLayoutCompat>

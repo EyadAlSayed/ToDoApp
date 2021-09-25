@@ -21,14 +21,15 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import todo.app.R
 import todo.app.broadcast.AlarmBroadcastReceiver
+import todo.app.data.ItemList
 import todo.app.database.FireStoreDB
 import todo.app.message.ErrorMessage
 import todo.app.message.InfoMessage
 import todo.app.model.TaskModel
 import java.util.*
+import javax.inject.Inject
 
-
-class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
+class SingleTaskFragment @Inject constructor() : Fragment(), DatePickerDialog.OnDateSetListener,
     TimePickerDialog.OnTimeSetListener {
 
     private lateinit var v: View
@@ -38,61 +39,120 @@ class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
     private lateinit var taskDate: String
     private lateinit var taskTime: String
     private lateinit var calendar: Calendar
+    private var intentFlag : Int? = null
+    private lateinit var intentTaskModel: TaskModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        v = inflater.inflate(R.layout.new_task_fragment, container, false)
-        initViews()
+
+        v = inflater.inflate(R.layout.single_task_fragment, container, false)
+
+        intentFlag = requireArguments().getInt("FLAG")
+        if(intentFlag != 0) intentTaskModel = requireArguments().getSerializable("TASK") as TaskModel
+
         calendar = Calendar.getInstance()
-        changeTitle()
+        initViews()
+        changeActionBarTitle()
         return v
     }
 
     private val onAddClick = View.OnClickListener {
         if (checkInput()) {
+            val id = FireStoreDB.getCollectionRef().document().id
             val task = TaskModel(
+                id,
                 edName.text.toString(),
                 edDesc.text.toString(),
                 edPrio.text.toString().toInt(),
                 taskDate,
                 taskTime
             )
-            FireStoreDB.getCollectionRef().add(task)
+            FireStoreDB.setDoc(id, task)
+            ItemList.addItem(task)
             startNewAlarm(task)
             clearView()
             hideKeyBoard()
             showSnackBar(InfoMessage.ADD_TASK.message)
         }
+    }
+
+    private val onUpdateClick = View.OnClickListener {
+        if (checkInput()) {
+            val id = intentTaskModel.id
+            val task = TaskModel(
+                id,
+                edName.text.toString(),
+                edDesc.text.toString(),
+                edPrio.text.toString().toInt(),
+                taskDate,
+                taskTime
+            )
+            FireStoreDB.setDoc(id, task)
+            startNewAlarm(task)
+            clearView()
+            hideKeyBoard()
+            showSnackBar(InfoMessage.UPDATE_TASK.message)
+        }
 
     }
 
-
     private val onDatePickerClick = View.OnClickListener {
-        val datePicker = DatePickerFragment()
+        val datePicker = DatePickerFragment(this)
         datePicker.show(requireActivity().supportFragmentManager, "datePicker")
     }
 
     private val onTimePickerClick = View.OnClickListener {
-        val timePicker = TimePickerFragment()
+        val timePicker = TimePickerFragment(this)
         timePicker.show(requireActivity().supportFragmentManager, "timePicker")
     }
 
     private fun initViews() {
-        v.findViewById<Button>(R.id.add_task_btn).setOnClickListener(onAddClick)
+
         v.findViewById<Button>(R.id.pick_date_btn).setOnClickListener(onDatePickerClick)
         v.findViewById<Button>(R.id.pick_time_btn).setOnClickListener(onTimePickerClick)
 
         edName = v.findViewById(R.id.ed_name)
         edDesc = v.findViewById(R.id.ed_desc)
         edPrio = v.findViewById(R.id.ed_priority)
+
+        if (intentFlag == 1) {
+            initUpdateView()
+            showUpdateTaskButton()
+        }
+        else showAddTaskButton()
+
     }
 
-    private fun changeTitle() {
+    private fun initUpdateView() {
+
+        edName.setText(intentTaskModel.name)
+        edDesc.setText(intentTaskModel.description)
+        edPrio.setText(intentTaskModel.priority.toString())
+        taskDate = intentTaskModel.date
+        taskTime = intentTaskModel.time
+    }
+
+    private fun changeActionBarTitle() {
         val appCompatActivity: AppCompatActivity = activity as AppCompatActivity
-        appCompatActivity.title = "Add New Task"
+        val actionBarTitle = if(intentFlag == 0) "New Task" else "Update Task"
+        appCompatActivity.title = actionBarTitle
+    }
+
+    private fun showAddTaskButton() {
+        val button = v.findViewById<Button>(R.id.add_task_btn)
+        button.visibility = View.VISIBLE
+        button.setOnClickListener(onAddClick)
+        v.findViewById<Button>(R.id.update_task_btn).visibility = View.GONE
+    }
+
+    private fun showUpdateTaskButton() {
+        val button = v.findViewById<Button>(R.id.update_task_btn)
+        button.visibility = View.VISIBLE
+        button.setOnClickListener(onUpdateClick)
+        v.findViewById<Button>(R.id.add_task_btn).visibility = View.GONE
     }
 
     private fun checkInput(): Boolean {
@@ -123,24 +183,27 @@ class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
     }
 
     private fun clearView() {
+
         edName.text.clear()
         edDesc.text.clear()
         edPrio.text.clear()
         taskTime = ""
         taskDate = ""
+        changePickerButtonRes(v.findViewById(R.id.pick_date_btn), R.drawable.rounded_shape)
+        changePickerButtonRes(v.findViewById(R.id.pick_time_btn), R.drawable.rounded_shape)
     }
 
     private fun startNewAlarm(taskModel: TaskModel) {
 
-        val reqCode = 0
-        val alarmManager = context?.getSystemService(ALARM_SERVICE) as AlarmManager?
+        val reqCode = ItemList.getItemListSize()
+        val alarmManager = requireActivity().getSystemService(ALARM_SERVICE) as AlarmManager?
         val intent = Intent(
-            context,
+            requireActivity(),
             AlarmBroadcastReceiver::class.java
-        ).apply { this.putExtra("ID",reqCode) }
+        ).apply { this.putExtra("ID", reqCode) }
 
         sendTaskObject(intent, taskModel)
-        val pendingIntent = PendingIntent.getBroadcast(activity, reqCode, intent, 0)
+        val pendingIntent = PendingIntent.getBroadcast(requireActivity(), reqCode, intent, 0)
         alarmManager?.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
     }
 
@@ -153,11 +216,12 @@ class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
 
     }
 
-    private fun showSnackBar(message:String){
+    private fun showSnackBar(message: String) {
         val sb = Snackbar.make(v, message, Snackbar.LENGTH_SHORT)
         sb.view.setBackgroundResource(R.drawable.rounded_shape_snackbar)
         sb.show()
     }
+
     private fun sendTaskObject(intent: Intent, taskModel: TaskModel) {
         intent.putExtra("NAME", taskModel.name)
         intent.putExtra("DESC", taskModel.description)
@@ -167,9 +231,9 @@ class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
     }
 
     override fun onDateSet(view: DatePicker?, year: Int, month: Int, dayOfMonth: Int) {
-        taskDate = "$year-${month+1}-$dayOfMonth"
+        taskDate = "$year-${month + 1}-$dayOfMonth"
 
-        changePickerButtonColor(v.findViewById(R.id.pick_date_btn))
+        changePickerButtonRes(v.findViewById(R.id.pick_date_btn), R.color.orange)
 
         calendar[Calendar.YEAR] = year
         calendar[Calendar.MONTH] = month
@@ -179,7 +243,7 @@ class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
     override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
         taskTime = "$hourOfDay:$minute:00"
 
-        changePickerButtonColor(v.findViewById(R.id.pick_time_btn))
+        changePickerButtonRes(v.findViewById(R.id.pick_time_btn), R.color.orange)
 
         calendar[Calendar.HOUR_OF_DAY] = hourOfDay
         calendar[Calendar.MINUTE] = minute
@@ -187,7 +251,7 @@ class AddTaskFragment : Fragment(), DatePickerDialog.OnDateSetListener,
         calendar[Calendar.MILLISECOND] = 0
     }
 
-    private fun changePickerButtonColor(button: Button){
-        button.setBackgroundResource(R.color.orange)
+    private fun changePickerButtonRes(button: Button, res: Int) {
+        button.setBackgroundResource(res)
     }
 }
