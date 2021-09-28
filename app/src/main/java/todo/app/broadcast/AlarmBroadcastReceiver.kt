@@ -4,24 +4,25 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import todo.app.activity.AlarmActivity
+import todo.app.enumValue.Keys
 
 class AlarmBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
 
         val alarmIntent = Intent(context, AlarmActivity::class.java).apply {
-            this.putExtra("NAME", intent!!.getStringExtra("NAME"))
-            this.putExtra("DESC", intent.getStringExtra("DESC"))
-            this.putExtra("ID", intent.getIntExtra("ID", -1))
+            this.putExtra(Keys.TASK_NAME.value, intent!!.getStringExtra(Keys.TASK_NAME.value))
+            this.putExtra(Keys.TASK_DESC.value, intent.getStringExtra(Keys.TASK_DESC.value))
+            this.putExtra(Keys.REQUEST_CODE.value, intent.getIntExtra(Keys.REQUEST_CODE.value, -1))
 
             /**
              * for more info about the task object that send via intent
              *
              *
              *
-             *  this.putExtra("PRIO",intent.getIntExtra("PRIO",-1))
-             *  this.putExtra("DATE",intent.getStringExtra("DATE"))
-             *  this.putExtra("TIME",intent.getStringExtra("TIME"))
+             *  this.putExtra(Keys.TASK_PRIO.value,intent.getIntExtra(Keys.TASK_PRIO.value,-1))
+             *  this.putExtra(Keys.TASK_DATE.value,intent.getStringExtra(Keys.TASK_DATE.value))
+             *  this.putExtra(Keys.TASK_TIME.value,intent.getStringExtra(Keys.TASK_TIME.value))
              *
              * */
 

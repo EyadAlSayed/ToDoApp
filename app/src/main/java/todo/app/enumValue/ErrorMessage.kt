@@ -1,4 +1,4 @@
-package todo.app.message
+package todo.app.enumValue
 
 enum class ErrorMessage(val message:String) {
     DATE_NOT_CHOSEN("You have to pick a date"),

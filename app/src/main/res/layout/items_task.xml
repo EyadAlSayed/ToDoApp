@@ -27,6 +27,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/txt_day"
                 android:text="@string/day"
+                android:fontFamily="@font/acme_regular"
                 android:layout_gravity="center"
                 android:textSize="@dimen/_14ssp"
                 android:textColor="@android:color/black"
@@ -37,6 +38,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/txt_month"
                 android:text="@string/mon"
+                android:fontFamily="@font/acme_regular"
                 android:layout_gravity="center"
                 android:textSize="@dimen/_16ssp"
                 />
@@ -47,6 +49,7 @@
                 android:id="@+id/txt_year"
                 android:layout_gravity="center"
                 android:text="@string/year"
+                android:fontFamily="@font/acme_regular"
                 android:textSize="@dimen/_14ssp"
                 android:textColor="@android:color/black"
                 android:alpha="0.5"/>
@@ -79,6 +82,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:fontFamily="@font/acme_regular"
                     android:paddingBottom="@dimen/_5sdp"
                     android:singleLine="true"
                     android:textColor="@android:color/black"
@@ -92,6 +96,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:alpha="0.5"
+                android:fontFamily="@font/acme_regular"
                 android:maxLines="2"
                 android:textColor="@android:color/black"
                 android:textSize="@dimen/_12ssp"
@@ -102,6 +107,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:alpha="0.5"
+                android:fontFamily="@font/acme_regular"
                 android:singleLine="true"
                 android:textColor="@android:color/black"
                 android:textSize="@dimen/_12ssp"
@@ -109,6 +115,7 @@
 
             <TextView
                 android:id="@+id/status"
+                android:fontFamily="@font/acme_regular"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"

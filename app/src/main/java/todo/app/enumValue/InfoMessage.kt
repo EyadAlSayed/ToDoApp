@@ -1,4 +1,4 @@
-package todo.app.message
+package todo.app.enumValue
 
 enum class InfoMessage(val message: String) {
     ADD_TASK("Task was added"),

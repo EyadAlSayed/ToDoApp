@@ -19,6 +19,7 @@
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/acme_regular"
             android:id="@+id/ed_name"
             />
     </com.google.android.material.textfield.TextInputLayout>
@@ -37,6 +38,7 @@
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/acme_regular"
             android:id="@+id/ed_desc"
             />
     </com.google.android.material.textfield.TextInputLayout>
@@ -55,6 +57,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/ed_priority"
+            android:fontFamily="@font/acme_regular"
             android:inputType="number"
             />
     </com.google.android.material.textfield.TextInputLayout>
@@ -71,11 +74,11 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/_8sdp"
             android:layout_weight="1"
+            android:fontFamily="@font/acme_regular"
             android:background="@drawable/rounded_shape"
             android:text="@string/pick_time"
             android:textSize="@dimen/_11ssp"
             app:backgroundTint="@null"
-
             />
 
         <Button
@@ -84,6 +87,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/_8sdp"
             android:layout_weight="1"
+            android:fontFamily="@font/acme_regular"
             android:background="@drawable/rounded_shape"
             android:text="@string/pick_date"
             android:textSize="@dimen/_11ssp"
@@ -99,6 +103,7 @@
         android:layout_gravity="center"
         android:layout_marginTop="@dimen/_30sdp"
         android:textSize="@dimen/_11ssp"
+        android:fontFamily="@font/acme_regular"
         android:background="@drawable/rounded_shape"
         android:text="@string/add_new_task"
         app:backgroundTint="@null"
@@ -110,6 +115,7 @@
         android:layout_gravity="center"
         android:textSize="@dimen/_11ssp"
         android:layout_marginTop="@dimen/_30sdp"
+        android:fontFamily="@font/acme_regular"
         android:background="@drawable/rounded_shape"
         android:text="@string/update_task"
         app:backgroundTint="@null"

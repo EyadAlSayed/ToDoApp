@@ -4,10 +4,8 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.media.MediaPlayer
-import android.os.Build
 import android.os.Bundle
 import android.view.View
-import android.view.WindowInsets
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageView
@@ -17,7 +15,8 @@ import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import todo.app.R
 import todo.app.broadcast.AlarmBroadcastReceiver
-import todo.app.message.InfoMessage
+import todo.app.enumValue.InfoMessage
+import todo.app.enumValue.Keys
 
 
 class AlarmActivity : AppCompatActivity() {
@@ -31,15 +30,7 @@ class AlarmActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        @Suppress("DEPRECATION")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.insetsController?.hide(WindowInsets.Type.statusBars())
-        } else {
-            window.setFlags(
-                WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN
-            )
-        }
+        setFullScreenMode()
         setContentView(R.layout.alram_layout)
         view = findViewById(R.id.alarm_parent_layout)
 
@@ -48,11 +39,18 @@ class AlarmActivity : AppCompatActivity() {
         loadingGIFImage()
 
 
-        txtAlarmTaskName.text = intent.getStringExtra("NAME")
-        txtAlarmDesc.text = intent.getStringExtra("DESC")
+        txtAlarmTaskName.text = intent.getStringExtra(Keys.TASK_NAME.value)
+        txtAlarmDesc.text = intent.getStringExtra(Keys.TASK_DESC.value)
 
         mediaPlayer!!.start()
 
+    }
+
+    private fun setFullScreenMode() {
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN
+        )
     }
 
     private val onOkClick = View.OnClickListener {

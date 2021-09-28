@@ -23,8 +23,9 @@ import todo.app.R
 import todo.app.broadcast.AlarmBroadcastReceiver
 import todo.app.data.ItemList
 import todo.app.database.FireStoreDB
-import todo.app.message.ErrorMessage
-import todo.app.message.InfoMessage
+import todo.app.enumValue.ErrorMessage
+import todo.app.enumValue.InfoMessage
+import todo.app.enumValue.Keys
 import todo.app.model.TaskModel
 import java.util.*
 import javax.inject.Inject
@@ -61,7 +62,7 @@ class SingleTaskFragment @Inject constructor() : Fragment(), DatePickerDialog.On
 
     private val onAddClick = View.OnClickListener {
         if (checkInput()) {
-            val id = FireStoreDB.getCollectionRef().document().id
+            val id = FireStoreDB.getTaskCollectionRef().document().id
             val task = TaskModel(
                 id,
                 edName.text.toString(),
@@ -70,7 +71,8 @@ class SingleTaskFragment @Inject constructor() : Fragment(), DatePickerDialog.On
                 taskDate,
                 taskTime
             )
-            FireStoreDB.setDoc(id, task)
+
+            FireStoreDB.setTaskDoc(id, task)
             ItemList.addItem(task)
             startNewAlarm(task)
             clearView()
@@ -80,7 +82,7 @@ class SingleTaskFragment @Inject constructor() : Fragment(), DatePickerDialog.On
     }
 
     private val onUpdateClick = View.OnClickListener {
-        if (checkInput()) {
+       if (checkInput()) {
             val id = intentTaskModel.id
             val task = TaskModel(
                 id,
@@ -90,7 +92,7 @@ class SingleTaskFragment @Inject constructor() : Fragment(), DatePickerDialog.On
                 taskDate,
                 taskTime
             )
-            FireStoreDB.setDoc(id, task)
+            FireStoreDB.setTaskDoc(id, task)
             startNewAlarm(task)
             clearView()
             hideKeyBoard()
@@ -136,9 +138,9 @@ class SingleTaskFragment @Inject constructor() : Fragment(), DatePickerDialog.On
     }
 
     private fun changeActionBarTitle() {
-        val appCompatActivity: AppCompatActivity = activity as AppCompatActivity
+        val appCompatActivity: AppCompatActivity = requireActivity() as AppCompatActivity
         val actionBarTitle = if(intentFlag == 0) "New Task" else "Update Task"
-        appCompatActivity.title = actionBarTitle
+        appCompatActivity.supportActionBar?.title = actionBarTitle
     }
 
     private fun showAddTaskButton() {
@@ -200,7 +202,7 @@ class SingleTaskFragment @Inject constructor() : Fragment(), DatePickerDialog.On
         val intent = Intent(
             requireActivity(),
             AlarmBroadcastReceiver::class.java
-        ).apply { this.putExtra("ID", reqCode) }
+        ).apply { this.putExtra(Keys.REQUEST_CODE.value, reqCode) }
 
         sendTaskObject(intent, taskModel)
         val pendingIntent = PendingIntent.getBroadcast(requireActivity(), reqCode, intent, 0)
@@ -223,11 +225,11 @@ class SingleTaskFragment @Inject constructor() : Fragment(), DatePickerDialog.On
     }
 
     private fun sendTaskObject(intent: Intent, taskModel: TaskModel) {
-        intent.putExtra("NAME", taskModel.name)
-        intent.putExtra("DESC", taskModel.description)
-        intent.putExtra("PRIO", taskModel.priority)
-        intent.putExtra("DATE", taskModel.date)
-        intent.putExtra("TIME", taskModel.time)
+        intent.putExtra(Keys.TASK_NAME.value, taskModel.name)
+        intent.putExtra(Keys.TASK_DESC.value, taskModel.description)
+        intent.putExtra(Keys.TASK_PRIO.value, taskModel.priority)
+        intent.putExtra(Keys.TASK_DATE.value, taskModel.date)
+        intent.putExtra(Keys.TASK_TIME.value, taskModel.time)
     }
 
     override fun onDateSet(view: DatePicker?, year: Int, month: Int, dayOfMonth: Int) {
@@ -241,7 +243,7 @@ class SingleTaskFragment @Inject constructor() : Fragment(), DatePickerDialog.On
     }
 
     override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
-        taskTime = "$hourOfDay:$minute:00"
+        taskTime = "${getTwoDigitNum(hourOfDay)}:${getTwoDigitNum(minute)}:00"
 
         changePickerButtonRes(v.findViewById(R.id.pick_time_btn), R.color.orange)
 
@@ -253,5 +255,9 @@ class SingleTaskFragment @Inject constructor() : Fragment(), DatePickerDialog.On
 
     private fun changePickerButtonRes(button: Button, res: Int) {
         button.setBackgroundResource(res)
+    }
+    private fun getTwoDigitNum(num:Int):String{
+        if(num <= 9) return  "0$num"
+        return num.toString()
     }
 }
