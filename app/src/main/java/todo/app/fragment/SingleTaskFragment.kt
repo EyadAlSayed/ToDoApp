@@ -51,8 +51,8 @@ class SingleTaskFragment @Inject constructor() : Fragment(), DatePickerDialog.On
 
         v = inflater.inflate(R.layout.single_task_fragment, container, false)
 
-        intentFlag = requireArguments().getInt("FLAG")
-        if(intentFlag != 0) intentTaskModel = requireArguments().getSerializable("TASK") as TaskModel
+        intentFlag = requireArguments().getInt(Keys.FLAG.value)
+        if(intentFlag != 0) intentTaskModel = requireArguments().getSerializable(Keys.TASK_MODEL.value) as TaskModel
 
         calendar = Calendar.getInstance()
         initViews()
@@ -158,19 +158,18 @@ class SingleTaskFragment @Inject constructor() : Fragment(), DatePickerDialog.On
     }
 
     private fun checkInput(): Boolean {
-        val errorMessage = "This field is required"
         var isOk = true
 
         if (edName.text.isEmpty()) {
-            edName.error = errorMessage
+            edName.error = ErrorMessage.FIELD_REQUIRED.message
             isOk = false
         }
         if (edDesc.text.isEmpty()) {
-            edDesc.error = errorMessage
+            edDesc.error = ErrorMessage.FIELD_REQUIRED.message
             isOk = false
         }
         if (edPrio.text.isEmpty()) {
-            edPrio.error = errorMessage
+            edPrio.error = ErrorMessage.FIELD_REQUIRED.message
             isOk = false
         }
         if (taskDate.isEmpty()) {

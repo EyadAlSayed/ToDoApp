@@ -31,6 +31,7 @@ import todo.app.broadcast.AlarmBroadcastReceiver
 import todo.app.data.ItemList
 import todo.app.database.FireStoreDB
 import todo.app.enumValue.InfoMessage
+import todo.app.enumValue.Keys
 import todo.app.model.TaskModel
 import javax.inject.Inject
 
@@ -61,13 +62,12 @@ class AllTaskFragment @Inject constructor() : Fragment() {
         initViews()
         initRc()
         changeActionBarTitle()
-        startAnimatedProgressBar()
         getData()
 
         return v
     }
 
-    private val onFloatClick = View.OnClickListener {
+    private val onFloatButtonClick = View.OnClickListener {
         val bundle = Bundle()
         bundle.putInt("FLAG", 0)
         singleTaskFragment.arguments = bundle
@@ -76,6 +76,7 @@ class AllTaskFragment @Inject constructor() : Fragment() {
 
     private val onRefreshSwipe = SwipeRefreshLayout.OnRefreshListener {
         ItemList.removeAllItem()
+        rc.adapter!!.notifyDataSetChanged()
         getData()
         swipeRefreshLayout.isRefreshing = false
     }
@@ -100,8 +101,8 @@ class AllTaskFragment @Inject constructor() : Fragment() {
                     }
                     ItemTouchHelper.LEFT -> {
                         val bundle = Bundle()
-                        bundle.putInt("FLAG", 1)
-                        bundle.putSerializable("TASK", ItemList.getList()[pos])
+                        bundle.putInt(Keys.FLAG.value, 1)
+                        bundle.putSerializable(Keys.TASK_MODEL.value, ItemList.getList()[pos])
                         singleTaskFragment.arguments = bundle
                         showFragment(singleTaskFragment)
                     }
@@ -167,14 +168,13 @@ class AllTaskFragment @Inject constructor() : Fragment() {
     }
 
     private fun initViews() {
-        v.findViewById<FloatingActionButton>(R.id.fb_btn).setOnClickListener(onFloatClick)
+        v.findViewById<FloatingActionButton>(R.id.fb_btn).setOnClickListener(onFloatButtonClick)
+        v.findViewById<NestedScrollView>(R.id.nested_scroll_view).setOnScrollChangeListener(onScrollChangeListener)
         swipeRefreshLayout = v.findViewById(R.id.swipe_refreshL)
         swipeRefreshLayout.setOnRefreshListener(onRefreshSwipe)
         swipeRefreshLayout.setColorSchemeResources(R.color.orange)
-        nestedScrollView = v.findViewById(R.id.nested_scroll_view)
-        nestedScrollView.setOnScrollChangeListener(onScrollChangeListener)
-        progressBar = v.findViewById(R.id.pr_cr)
 
+        progressBar = v.findViewById(R.id.pr_cr)
     }
 
     private fun initRc() {
@@ -296,6 +296,7 @@ class AllTaskFragment @Inject constructor() : Fragment() {
     }
 
     private fun getData() {
+        startAnimatedProgressBar()
         FireStoreDB.getQueryByLimit(5).get().addOnSuccessListener {
             if (it.documents.isEmpty()) visibleEmptyView()
             else {
